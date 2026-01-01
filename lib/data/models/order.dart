@@ -1,50 +1,79 @@
-import 'package:hive/hive.dart';
+import 'package:flutter/material.dart';
 
-part 'order.g.dart';
+/// Order status enum
+enum OrderStatus {
+  pending,      // Menunggu pembayaran
+  paid,         // Sudah dibayar
+  processing,   // Sedang diproses penjual
+  shipped,      // Dalam pengiriman
+  delivered,    // Sudah diterima
+  completed,    // Selesai (sudah di-review)
+  cancelled,    // Dibatalkan
+}
 
-@HiveType(typeId: 3)
-class Order extends HiveObject {
-  @HiveField(0)
+extension OrderStatusExtension on OrderStatus {
+  String get displayName {
+    switch (this) {
+      case OrderStatus.pending:
+        return 'Menunggu Pembayaran';
+      case OrderStatus.paid:
+        return 'Sudah Dibayar';
+      case OrderStatus.processing:
+        return 'Sedang Diproses';
+      case OrderStatus.shipped:
+        return 'Dalam Pengiriman';
+      case OrderStatus.delivered:
+        return 'Sudah Diterima';
+      case OrderStatus.completed:
+        return 'Selesai';
+      case OrderStatus.cancelled:
+        return 'Dibatalkan';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case OrderStatus.pending:
+        return Icons.access_time;
+      case OrderStatus.paid:
+        return Icons.payment;
+      case OrderStatus.processing:
+        return Icons.inventory_2;
+      case OrderStatus.shipped:
+        return Icons.local_shipping;
+      case OrderStatus.delivered:
+        return Icons.check_circle;
+      case OrderStatus.completed:
+        return Icons.verified;
+      case OrderStatus.cancelled:
+        return Icons.cancel;
+    }
+  }
+
+  bool get canReview => this == OrderStatus.delivered;
+  bool get canCancel => this == OrderStatus.pending || this == OrderStatus.paid;
+  bool get canConfirmReceived => this == OrderStatus.shipped;
+}
+
+class Order {
   final String id;
-
-  @HiveField(1)
   final String userId;
-
-  @HiveField(2)
   final List<OrderItem> items;
-
-  @HiveField(3)
   final double subtotal;
-
-  @HiveField(4)
   final double shippingCost;
-
-  @HiveField(5)
   final double total;
-
-  @HiveField(6)
   final String shippingAddress;
-
-  @HiveField(7)
   final String city;
-
-  @HiveField(8)
   final String postalCode;
-
-  @HiveField(9)
   final String phone;
-
-  @HiveField(10)
   final String shippingMethod;
-
-  @HiveField(11)
   final String paymentMethod;
-
-  @HiveField(12)
   final DateTime orderDate;
-
-  @HiveField(13)
-  final String status; // Pending, Processing, Shipped, Delivered, Cancelled
+  final OrderStatus status;
+  final String? trackingNumber;
+  final DateTime? shippedDate;
+  final DateTime? deliveredDate;
+  final Review? review;
 
   Order({
     required this.id,
@@ -60,8 +89,54 @@ class Order extends HiveObject {
     required this.shippingMethod,
     required this.paymentMethod,
     required this.orderDate,
-    this.status = 'Pending',
+    this.status = OrderStatus.pending,
+    this.trackingNumber,
+    this.shippedDate,
+    this.deliveredDate,
+    this.review,
   });
+
+  Order copyWith({
+    String? id,
+    String? userId,
+    List<OrderItem>? items,
+    double? subtotal,
+    double? shippingCost,
+    double? total,
+    String? shippingAddress,
+    String? city,
+    String? postalCode,
+    String? phone,
+    String? shippingMethod,
+    String? paymentMethod,
+    DateTime? orderDate,
+    OrderStatus? status,
+    String? trackingNumber,
+    DateTime? shippedDate,
+    DateTime? deliveredDate,
+    Review? review,
+  }) {
+    return Order(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      items: items ?? this.items,
+      subtotal: subtotal ?? this.subtotal,
+      shippingCost: shippingCost ?? this.shippingCost,
+      total: total ?? this.total,
+      shippingAddress: shippingAddress ?? this.shippingAddress,
+      city: city ?? this.city,
+      postalCode: postalCode ?? this.postalCode,
+      phone: phone ?? this.phone,
+      shippingMethod: shippingMethod ?? this.shippingMethod,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      orderDate: orderDate ?? this.orderDate,
+      status: status ?? this.status,
+      trackingNumber: trackingNumber ?? this.trackingNumber,
+      shippedDate: shippedDate ?? this.shippedDate,
+      deliveredDate: deliveredDate ?? this.deliveredDate,
+      review: review ?? this.review,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -78,7 +153,11 @@ class Order extends HiveObject {
       'shippingMethod': shippingMethod,
       'paymentMethod': paymentMethod,
       'orderDate': orderDate.toIso8601String(),
-      'status': status,
+      'status': status.name,
+      'trackingNumber': trackingNumber,
+      'shippedDate': shippedDate?.toIso8601String(),
+      'deliveredDate': deliveredDate?.toIso8601String(),
+      'review': review?.toJson(),
     };
   }
 
@@ -97,29 +176,24 @@ class Order extends HiveObject {
       shippingMethod: json['shippingMethod'],
       paymentMethod: json['paymentMethod'],
       orderDate: DateTime.parse(json['orderDate']),
-      status: json['status'] ?? 'Pending',
+      status: OrderStatus.values.firstWhere(
+        (e) => e.name == json['status'],
+        orElse: () => OrderStatus.pending,
+      ),
+      trackingNumber: json['trackingNumber'],
+      shippedDate: json['shippedDate'] != null ? DateTime.parse(json['shippedDate']) : null,
+      deliveredDate: json['deliveredDate'] != null ? DateTime.parse(json['deliveredDate']) : null,
+      review: json['review'] != null ? Review.fromJson(json['review']) : null,
     );
   }
 }
 
-@HiveType(typeId: 4)
-class OrderItem extends HiveObject {
-  @HiveField(0)
+class OrderItem {
   final String bookId;
-
-  @HiveField(1)
   final String title;
-
-  @HiveField(2)
   final String author;
-
-  @HiveField(3)
   final double price;
-
-  @HiveField(4)
   final int quantity;
-
-  @HiveField(5)
   final String imageUrl;
 
   OrderItem({
@@ -152,6 +226,40 @@ class OrderItem extends HiveObject {
       price: json['price'].toDouble(),
       quantity: json['quantity'],
       imageUrl: json['imageUrl'],
+    );
+  }
+}
+
+class Review {
+  final int rating; // 1-5
+  final String comment;
+  final DateTime reviewDate;
+  final List<String>? photoUrls;
+
+  Review({
+    required this.rating,
+    required this.comment,
+    required this.reviewDate,
+    this.photoUrls,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'rating': rating,
+      'comment': comment,
+      'reviewDate': reviewDate.toIso8601String(),
+      'photoUrls': photoUrls,
+    };
+  }
+
+  factory Review.fromJson(Map<String, dynamic> json) {
+    return Review(
+      rating: json['rating'],
+      comment: json['comment'],
+      reviewDate: DateTime.parse(json['reviewDate']),
+      photoUrls: json['photoUrls'] != null 
+          ? List<String>.from(json['photoUrls']) 
+          : null,
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:nightmarket/presentation/screens/checkout_screen.dart';
 import 'package:nightmarket/presentation/screens/add_book_screen.dart';
 import 'package:nightmarket/presentation/screens/my_listings_screen.dart';
 import 'package:nightmarket/presentation/screens/order_history_screen.dart';
+import 'package:nightmarket/presentation/screens/order_detail_screen.dart';
 import 'package:nightmarket/presentation/screens/edit_profile_screen.dart';
 import 'package:nightmarket/presentation/screens/barcode_scanner_screen.dart';
 import 'package:nightmarket/presentation/screens/auth/welcome_screen.dart';
@@ -123,6 +124,13 @@ GoRouter createRouter(UserProvider userProvider) {
     GoRoute(
       path: '/orders',
       builder: (context, state) => const OrderHistoryScreen(),
+    ),
+    GoRoute(
+      path: '/order/:id',
+      builder: (context, state) {
+        final orderId = state.pathParameters['id']!;
+        return OrderDetailScreen(orderId: orderId);
+      },
     ),
     GoRoute(
       path: '/edit-profile',

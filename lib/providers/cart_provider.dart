@@ -1,20 +1,20 @@
 import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:nightmarket/data/models/cart_item.dart';
 import 'package:nightmarket/data/models/book.dart';
-import 'package:nightmarket/core/constants/app_constants.dart';
 
-/// Provider for managing shopping cart state
+/// Provider for managing shopping cart state (in-memory)
 class CartProvider extends ChangeNotifier {
-  late Box<CartItem> _cartBox;
+  final List<CartItem> _items = [];
   bool _isInitialized = false;
 
-  List<CartItem> get items => _isInitialized ? _cartBox.values.toList() : [];
+  List<CartItem> get items => List.unmodifiable(_items);
   
-  int get itemCount => items.length;
+  int get itemCount => _items.length;
+  
+  int get totalItemCount => _items.fold(0, (sum, item) => sum + item.quantity);
   
   double get subtotal {
-    return items.fold(0.0, (sum, item) => sum + item.totalPrice);
+    return _items.fold(0.0, (sum, item) => sum + item.totalPrice);
   }
   
   double calculateTotal(double shippingCost) {
@@ -23,33 +23,18 @@ class CartProvider extends ChangeNotifier {
 
   Future<void> initialize() async {
     if (!_isInitialized) {
-      _cartBox = await Hive.openBox<CartItem>(AppConstants.cartBoxName);
       _isInitialized = true;
       notifyListeners();
     }
   }
 
-  Future<void> addToCart(Book book) async {
-    if (!_isInitialized) await initialize();
-    
+  void addToCart(Book book) {
     // Check if item already exists
-    final existingItem = items.firstWhere(
-      (item) => item.bookId == book.id,
-      orElse: () => CartItem(
-        bookId: '',
-        title: '',
-        author: '',
-        price: 0,
-        imageUrl: '',
-        condition: '',
-        sellerId: '',
-      ),
-    );
+    final existingIndex = _items.indexWhere((item) => item.bookId == book.id);
 
-    if (existingItem.bookId.isNotEmpty) {
+    if (existingIndex != -1) {
       // Item exists, increment quantity
-      existingItem.quantity++;
-      await existingItem.save();
+      _items[existingIndex].quantity++;
     } else {
       // Add new item
       final cartItem = CartItem(
@@ -61,51 +46,65 @@ class CartProvider extends ChangeNotifier {
         condition: book.condition,
         sellerId: book.sellerId,
       );
-      await _cartBox.add(cartItem);
+      _items.add(cartItem);
     }
     
     notifyListeners();
   }
 
-  Future<void> removeFromCart(String bookId) async {
-    if (!_isInitialized) await initialize();
-    
-    final item = items.firstWhere((item) => item.bookId == bookId);
-    await item.delete();
+  void removeFromCart(String bookId) {
+    _items.removeWhere((item) => item.bookId == bookId);
     notifyListeners();
   }
 
-  Future<void> updateQuantity(String bookId, int quantity) async {
-    if (!_isInitialized) await initialize();
-    
+  void updateQuantity(String bookId, int quantity) {
     if (quantity <= 0) {
-      await removeFromCart(bookId);
+      removeFromCart(bookId);
       return;
     }
 
-    final item = items.firstWhere((item) => item.bookId == bookId);
-    item.quantity = quantity;
-    await item.save();
-    notifyListeners();
+    final index = _items.indexWhere((item) => item.bookId == bookId);
+    if (index != -1) {
+      _items[index].quantity = quantity;
+      notifyListeners();
+    }
   }
 
-  Future<void> clearCart() async {
-    if (!_isInitialized) await initialize();
-    
-    await _cartBox.clear();
+  void incrementQuantity(String bookId) {
+    final index = _items.indexWhere((item) => item.bookId == bookId);
+    if (index != -1) {
+      _items[index].quantity++;
+      notifyListeners();
+    }
+  }
+
+  void decrementQuantity(String bookId) {
+    final index = _items.indexWhere((item) => item.bookId == bookId);
+    if (index != -1) {
+      if (_items[index].quantity > 1) {
+        _items[index].quantity--;
+      } else {
+        _items.removeAt(index);
+      }
+      notifyListeners();
+    }
+  }
+
+  void clearCart() {
+    _items.clear();
     notifyListeners();
   }
 
   bool isInCart(String bookId) {
-    return items.any((item) => item.bookId == bookId);
+    return _items.any((item) => item.bookId == bookId);
   }
 
   int getQuantity(String bookId) {
-    try {
-      final item = items.firstWhere((item) => item.bookId == bookId);
-      return item.quantity;
-    } catch (e) {
-      return 0;
-    }
+    final item = _items.where((item) => item.bookId == bookId).firstOrNull;
+    return item?.quantity ?? 0;
+  }
+
+  CartItem? getCartItem(String bookId) {
+    return _items.where((item) => item.bookId == bookId).firstOrNull;
   }
 }

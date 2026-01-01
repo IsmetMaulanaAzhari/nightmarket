@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:nightmarket/providers/cart_provider.dart';
 import 'package:nightmarket/providers/order_provider.dart';
 import 'package:nightmarket/providers/user_provider.dart';
@@ -317,41 +318,99 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       paymentMethod: _selectedPaymentMethod,
     );
 
-    await cartProvider.clearCart();
+    cartProvider.clearCart();
 
     if (mounted) {
-      // Show success dialog
+      // Show success dialog with navigation to order detail
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Text('Order Placed Successfully!'),
+        builder: (dialogContext) => AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_circle, color: Colors.green, size: 32),
+              ),
+              const SizedBox(width: 12),
+              const Text('Pesanan Berhasil!'),
+            ],
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Your order has been placed.'),
-              const SizedBox(height: 8),
-              Text(
-                'Order ID: ${order.id.substring(0, 8)}',
-                style: const TextStyle(fontWeight: FontWeight.bold),
+              const Text('Pesanan Anda telah berhasil dibuat.'),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Order ID: ${order.id}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Metode Pembayaran: $_selectedPaymentMethod',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              if (_selectedPaymentMethod == 'Bank Transfer')
-                const Text(
-                  'Bank transfer details will be sent to your email.',
-                  style: TextStyle(fontSize: 12),
+              const SizedBox(height: 12),
+              if (_selectedPaymentMethod == 'Transfer Bank')
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.blue, size: 20),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Silakan lakukan pembayaran dalam 24 jam.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Close checkout
-                Navigator.pop(context); // Close cart
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pop(); // Close checkout
+                Navigator.of(context).pop(); // Close cart
               },
-              child: const Text('OK'),
+              child: const Text('Kembali'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                Navigator.of(context).pop(); // Close checkout
+                Navigator.of(context).pop(); // Close cart
+                // Navigate to order detail
+                context.push('/order/${order.id}');
+              },
+              child: const Text('Lihat Pesanan'),
             ),
           ],
         ),

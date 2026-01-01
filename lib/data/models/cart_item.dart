@@ -1,31 +1,12 @@
-import 'package:hive/hive.dart';
-
-part 'cart_item.g.dart';
-
-@HiveType(typeId: 1)
-class CartItem extends HiveObject {
-  @HiveField(0)
+/// Represents an item in the shopping cart
+class CartItem {
   final String bookId;
-
-  @HiveField(1)
   final String title;
-
-  @HiveField(2)
   final String author;
-
-  @HiveField(3)
   final double price;
-
-  @HiveField(4)
   final String imageUrl;
-
-  @HiveField(5)
   final String condition;
-
-  @HiveField(6)
   int quantity;
-
-  @HiveField(7)
   final String sellerId;
 
   CartItem({
@@ -40,6 +21,28 @@ class CartItem extends HiveObject {
   });
 
   double get totalPrice => price * quantity;
+
+  CartItem copyWith({
+    String? bookId,
+    String? title,
+    String? author,
+    double? price,
+    String? imageUrl,
+    String? condition,
+    int? quantity,
+    String? sellerId,
+  }) {
+    return CartItem(
+      bookId: bookId ?? this.bookId,
+      title: title ?? this.title,
+      author: author ?? this.author,
+      price: price ?? this.price,
+      imageUrl: imageUrl ?? this.imageUrl,
+      condition: condition ?? this.condition,
+      quantity: quantity ?? this.quantity,
+      sellerId: sellerId ?? this.sellerId,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -59,10 +62,10 @@ class CartItem extends HiveObject {
       bookId: json['bookId'],
       title: json['title'],
       author: json['author'],
-      price: json['price'].toDouble(),
+      price: (json['price'] as num).toDouble(),
       imageUrl: json['imageUrl'],
       condition: json['condition'],
-      quantity: json['quantity'],
+      quantity: json['quantity'] ?? 1,
       sellerId: json['sellerId'],
     );
   }

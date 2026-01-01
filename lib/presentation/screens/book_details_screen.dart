@@ -322,16 +322,18 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
               if (!isInCart)
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () async {
-                      await cartProvider.addToCart(book);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Added to cart')),
-                        );
-                      }
+                    onPressed: () {
+                      cartProvider.addToCart(book);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Ditambahkan ke keranjang'),
+                          backgroundColor: theme.colorScheme.primary,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.shopping_cart_outlined),
-                    label: const Text('Add to Cart'),
+                    label: const Text('Keranjang'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -344,7 +346,7 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                       context.push('/cart');
                     },
                     icon: const Icon(Icons.shopping_cart),
-                    label: const Text('View Cart'),
+                    label: const Text('Lihat Keranjang'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -353,16 +355,14 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () async {
+                  onPressed: () {
                     if (!isInCart) {
-                      await cartProvider.addToCart(book);
+                      cartProvider.addToCart(book);
                     }
-                    if (context.mounted) {
-                      context.push('/checkout');
-                    }
+                    context.push('/checkout');
                   },
                   icon: const Icon(Icons.shopping_bag),
-                  label: const Text('Buy Now'),
+                  label: const Text('Beli Sekarang'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),

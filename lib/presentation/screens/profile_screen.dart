@@ -133,6 +133,62 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             
+            const SizedBox(height: 16),
+            
+            // Order Status Summary
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            'Status Pesanan',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          TextButton(
+                            onPressed: () => context.push('/orders'),
+                            child: const Text('Lihat Semua'),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildOrderStatusItem(
+                            context,
+                            Icons.payment,
+                            'Bayar',
+                            orderProvider.getPendingOrdersCount(user.id),
+                          ),
+                          _buildOrderStatusItem(
+                            context,
+                            Icons.local_shipping,
+                            'Dikirim',
+                            orderProvider.getToReceiveCount(user.id),
+                          ),
+                          _buildOrderStatusItem(
+                            context,
+                            Icons.rate_review,
+                            'Ulasan',
+                            orderProvider.getToReviewCount(user.id),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            
             const SizedBox(height: 24),
             
             // Menu Items
@@ -288,6 +344,52 @@ class ProfileScreen extends StatelessWidget {
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
+    );
+  }
+
+  Widget _buildOrderStatusItem(BuildContext context, IconData icon, String label, int count) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: () => context.push('/orders'),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(icon, size: 28, color: theme.colorScheme.primary),
+                if (count > 0)
+                  Positioned(
+                    top: -4,
+                    right: -8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        '$count',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: theme.textTheme.bodySmall,
+            ),
+          ],
+        ),
+      ),
     );
   }
 
