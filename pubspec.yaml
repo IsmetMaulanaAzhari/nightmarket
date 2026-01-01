@@ -55,6 +55,12 @@ dependencies:
   smooth_page_indicator: ^1.1.0
   flutter_rating_bar: ^4.0.1
   
+  # Barcode Scanner
+  mobile_scanner: ^5.1.1
+  
+  # HTTP for ISBN API
+  http: ^1.2.0
+  
   # Utilities
   intl: ^0.19.0
   uuid: ^4.3.3

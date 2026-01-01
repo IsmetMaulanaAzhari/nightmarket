@@ -7,8 +7,9 @@ import 'package:nightmarket/core/constants/app_constants.dart';
 
 class AddBookScreen extends StatefulWidget {
   final String? bookId; // If editing an existing book
+  final Map<String, dynamic>? prefilledData; // Data from barcode scanner
 
-  const AddBookScreen({super.key, this.bookId});
+  const AddBookScreen({super.key, this.bookId, this.prefilledData});
 
   @override
   State<AddBookScreen> createState() => _AddBookScreenState();
@@ -28,6 +29,31 @@ class _AddBookScreenState extends State<AddBookScreen> {
   List<String> _imageUrls = [];
   
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Prefill data from barcode scanner
+    if (widget.prefilledData != null) {
+      final data = widget.prefilledData!;
+      _titleController.text = data['title'] ?? '';
+      _authorController.text = data['author'] ?? '';
+      _isbnController.text = data['isbn'] ?? '';
+      
+      // Add cover image if available
+      if (data['coverUrl'] != null && data['coverUrl'].toString().isNotEmpty) {
+        _imageUrls.add(data['coverUrl']);
+      }
+      
+      // Set category if available
+      if (data['category'] != null) {
+        final category = data['category'] as String;
+        if (AppConstants.categories.contains(category)) {
+          _selectedCategory = category;
+        }
+      }
+    }
+  }
 
   @override
   void dispose() {

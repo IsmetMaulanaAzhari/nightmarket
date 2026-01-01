@@ -5,6 +5,7 @@ import 'package:nightmarket/providers/user_provider.dart';
 import 'package:nightmarket/providers/book_provider.dart';
 import 'package:nightmarket/providers/wishlist_provider.dart';
 import 'package:nightmarket/providers/order_provider.dart';
+import 'package:nightmarket/core/theme/app_theme.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -19,9 +20,12 @@ class ProfileScreen extends StatelessWidget {
     
     final user = userProvider.currentUser;
 
-    if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please log in')),
+    if (!userProvider.isLoggedIn || user == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Profile'),
+        ),
+        body: _buildLoginPrompt(context),
       );
     }
 
@@ -138,9 +142,7 @@ class ProfileScreen extends StatelessWidget {
               'My Orders',
               'View purchase history',
               () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Orders screen coming soon')),
-                );
+                context.push('/orders');
               },
             ),
             _buildMenuItem(
@@ -167,7 +169,7 @@ class ProfileScreen extends StatelessWidget {
               'Edit Profile',
               'Update your information',
               () {
-                // Navigate to edit profile
+                context.push('/edit-profile');
               },
             ),
             _buildMenuItem(
@@ -286,6 +288,79 @@ class ProfileScreen extends StatelessWidget {
       subtitle: Text(subtitle),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
+    );
+  }
+
+  Widget _buildLoginPrompt(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: AppTheme.cream,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.person_outline,
+                size: 60,
+                color: AppTheme.primaryBrown,
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Selamat Datang di BookCircle',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Login untuk mengakses profil, pesanan, dan fitur lainnya',
+              style: TextStyle(color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => context.push('/login'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryBrown,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Login',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () => context.push('/register'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 16),
+                side: const BorderSide(color: AppTheme.primaryBrown),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Daftar Akun Baru'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

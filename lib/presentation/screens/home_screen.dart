@@ -67,6 +67,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.qr_code_scanner),
+            tooltip: 'Scan ISBN',
+            onPressed: () {
+              context.push('/scan-barcode');
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.favorite_border),
             onPressed: () {
               context.push('/wishlist');
