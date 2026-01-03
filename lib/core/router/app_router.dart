@@ -12,6 +12,10 @@ import 'package:nightmarket/presentation/screens/order_history_screen.dart';
 import 'package:nightmarket/presentation/screens/order_detail_screen.dart';
 import 'package:nightmarket/presentation/screens/edit_profile_screen.dart';
 import 'package:nightmarket/presentation/screens/barcode_scanner_screen.dart';
+import 'package:nightmarket/presentation/screens/address_screen.dart';
+import 'package:nightmarket/presentation/screens/help_support_screen.dart';
+import 'package:nightmarket/presentation/screens/about_screen.dart';
+import 'package:nightmarket/presentation/screens/settings_screen.dart';
 import 'package:nightmarket/presentation/screens/auth/welcome_screen.dart';
 import 'package:nightmarket/presentation/screens/auth/login_screen.dart';
 import 'package:nightmarket/presentation/screens/auth/register_screen.dart';
@@ -139,6 +143,22 @@ GoRouter createRouter(UserProvider userProvider) {
     GoRoute(
       path: '/scan-barcode',
       builder: (context, state) => const BarcodeScannerScreen(),
+    ),
+    GoRoute(
+      path: '/addresses',
+      builder: (context, state) => const AddressScreen(),
+    ),
+    GoRoute(
+      path: '/help-support',
+      builder: (context, state) => const HelpSupportScreen(),
+    ),
+    GoRoute(
+      path: '/about',
+      builder: (context, state) => const AboutScreen(),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
     ),
   ],
 );

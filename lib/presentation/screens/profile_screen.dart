@@ -5,6 +5,7 @@ import 'package:nightmarket/providers/user_provider.dart';
 import 'package:nightmarket/providers/book_provider.dart';
 import 'package:nightmarket/providers/wishlist_provider.dart';
 import 'package:nightmarket/providers/order_provider.dart';
+import 'package:nightmarket/providers/theme_provider.dart';
 import 'package:nightmarket/core/theme/app_theme.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -36,7 +37,7 @@ class ProfileScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // Navigate to settings
+              context.push('/settings');
             },
           ),
         ],
@@ -191,6 +192,32 @@ class ProfileScreen extends StatelessWidget {
             
             const SizedBox(height: 24),
             
+            // Theme Toggle
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Card(
+                child: Consumer<ThemeProvider>(
+                  builder: (context, themeProvider, child) {
+                    return ListTile(
+                      leading: Icon(themeProvider.themeModeIcon),
+                      title: const Text('Mode Tema'),
+                      subtitle: Text(themeProvider.themeModeLabel),
+                      trailing: Switch(
+                        value: themeProvider.themeMode == ThemeMode.dark,
+                        onChanged: (value) {
+                          themeProvider.setThemeMode(
+                            value ? ThemeMode.dark : ThemeMode.light,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
             // Menu Items
             _buildMenuItem(
               context,
@@ -234,7 +261,7 @@ class ProfileScreen extends StatelessWidget {
               'Addresses',
               'Manage shipping addresses',
               () {
-                // Navigate to addresses
+                context.push('/addresses');
               },
             ),
             _buildMenuItem(
@@ -243,7 +270,7 @@ class ProfileScreen extends StatelessWidget {
               'Help & Support',
               'Get help with your account',
               () {
-                // Navigate to help
+                context.push('/help-support');
               },
             ),
             _buildMenuItem(
@@ -252,7 +279,7 @@ class ProfileScreen extends StatelessWidget {
               'About',
               'Learn more about BookCircle',
               () {
-                // Navigate to about
+                context.push('/about');
               },
             ),
             
